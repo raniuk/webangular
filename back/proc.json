@@ -1,0 +1,38 @@
+[
+	{
+		"value": 1, 
+		"name": "Chuquisaca"
+	},
+	{
+		"value": 2, 
+		"name": "La Paz"
+	},
+	{
+		"value": 3, 
+		"name": "Cochabamba"
+	},
+	{
+		"value": 4, 
+		"name": "Santa Cruz"
+	},
+	{
+		"value": 5, 
+		"name": "Oruro"
+	},
+	{
+		"value": 6, 
+		"name": "Potosí"
+	},
+	{
+		"value": 7, 
+		"name": "Tarija"
+	},
+	{
+		"value": 8, 
+		"name": "Beni"
+	},
+	{
+		"value": 9, 
+		"name": "Pando"
+	}
+]

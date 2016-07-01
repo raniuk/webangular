@@ -1,0 +1,186 @@
+<?php session_start();
+    include('../lib/conexions.php');
+    require_once '../lib/Classes/PHPExcel.php';
+    require_once '../lib/Classes/PHPExcel/IOFactory.php';
+    $fecha = $_POST['rfecha'];
+    $user = $_SESSION['iop'];
+    $objPHPExcel = new PHPExcel();
+    $objPHPExcel->
+    getProperties()
+        ->setCreator("GMZBol")
+        ->setLastModifiedBy("GMZBol")
+        ->setTitle("Reporte anual de servicios")
+        ->setSubject("Reporte anual")
+        ->setDescription("Reporte anual de servicios")
+        ->setKeywords("GMZBol")
+        ->setCategory("Reportes");
+    $objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:G1');
+    //$objSheet = $objPHPExcel->setActiveSheetIndex(0);
+    $objSheet = $objPHPExcel->setActiveSheetIndex();
+    $objSheet->setCellValue('A1', 'REPORTE ANUAL DE SERVICIOS'." - ".$fecha);
+    $objSheet->setCellValue('A2', 'Nro');
+    $objSheet->setCellValue('B2', '    CLIENTE    ');
+    $objSheet->setCellValue('C2', '    EMPRESA     ');
+    $objSheet->setCellValue('D2', 'FORMA DE PAGO');
+    $objSheet->setCellValue('E2', 'CUENTA');
+    $objSheet->setCellValue('F2', 'TIEMPO DE EJECUCION');
+    $objSheet->setCellValue('G2', '  SERIE  ');
+    $objPHPExcel->getActiveSheet()->getColumnDimension("A")->setAutoSize(true);
+    $objPHPExcel->getActiveSheet()->getColumnDimension("B")->setAutoSize(true);
+    $objPHPExcel->getActiveSheet()->getColumnDimension("C")->setAutoSize(true);
+    $objPHPExcel->getActiveSheet()->getColumnDimension("D")->setAutoSize(true);
+    $objPHPExcel->getActiveSheet()->getColumnDimension("E")->setAutoSize(true);
+    $objPHPExcel->getActiveSheet()->getColumnDimension("F")->setAutoSize(true);
+    $objPHPExcel->getActiveSheet()->getColumnDimension("G")->setAutoSize(true);
+    
+    $resultado=$conn->query("SELECT ps.bancoempse, ps.formapuse, ps.formapdse, ps.formaptse, ps.formapcse, ps.tiempopse, ps.numeropse, cl.nombrecli, cl.razonempcli FROM clientes cl, prestarserv ps WHERE ps.idu='$user' AND ps.fechapse LIKE '$fecha%' AND cl.idcli=ps.idcli ORDER BY ps.idpse");
+    $i = 3;
+    foreach($resultado as $registro){
+        $serie = "GMZ.SER/";
+        $tam = (int) strlen($registro['numeropse']);
+        for ($j = 0; $j<8-$tam; $j++) {
+            $serie = $serie.'0';
+        }
+        $serie = $serie.$registro['numeropse'];
+        if ($registro['bancoempse']==1) {
+            $queryemp=$conn->query("SELECT bancoemp FROM empresa ORDER BY idemp DESC LIMIT 1")->fetch();
+            $banco = $queryemp['bancoemp'];
+        }elseif ($registro['bancoempse']==2) {
+            $queryemp=$conn->query("SELECT bancodemp FROM empresa ORDER BY idemp DESC LIMIT 1")->fetch();
+            $banco = $queryemp['bancodemp'];
+        }
+        $objSheet->setCellValue('A'.$i, $i-2);
+        $objSheet->setCellValue('B'.$i, $registro['nombrecli']);
+        $objSheet->setCellValue('C'.$i, $registro['razonempcli']);
+        $objSheet->setCellValue('D'.$i, ($registro['formapuse']+$registro['formapdse']+$registro['formaptse']+$registro['formapcse'])."%");
+        $objSheet->setCellValue('E'.$i, $banco);
+        $objSheet->setCellValue('F'.$i, $registro['tiempopse']);
+        $objSheet->setCellValue('G'.$i, $serie);
+        $i++;
+    }
+    $estiloTitulo = array(
+        'font' => array(
+            'name'      => 'Verdana',
+            'bold'      => true,
+            'italic'    => false,
+            'strike'    => false,
+            'size' =>12,
+                'color'     => array(
+                    'rgb' => '202020'
+                )
+        ),
+        'fill' => array(
+            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+            'color' => array('argb' => 'FFFFFFFF')
+        ),
+        'borders' => array(
+            'allborders' => array(
+                'style' => PHPExcel_Style_Border::BORDER_NONE
+            )
+        ), 
+        'alignment' =>  array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                'rotation'   => 0,
+                'wrap'          => FALSE
+        )
+    );
+    $estiloTituloReporte = array(
+        'font' => array(
+            'name'      => 'Verdana',
+            'bold'      => true,
+            'italic'    => false,
+            'strike'    => false,
+            'size' =>10,
+                'color'     => array(
+                    'rgb' => '212121'
+                )
+        ),
+        'fill' => array(
+            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+            'color' => array('argb' => 'FFd8e7fa')
+        ),
+        'borders' => array(
+            'allborders' => array(
+                'style' => PHPExcel_Style_Border::BORDER_NONE
+            )
+        ), 
+        'alignment' =>  array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                'rotation'   => 0,
+                'wrap'          => FALSE
+        )
+    );
+    $estiloTituloColumnas = array(
+        'font' => array(
+            'name'      => 'Arial',
+            'bold'      => FALSE,
+            'size' =>10,
+            'color'     => array(
+                'rgb' => '212121'
+            )
+        ),
+        'fill'  => array(
+            'endcolor'   => array(
+                'argb' => 'FF431a5d'
+            )
+        ),
+        'borders' => array(
+            'top'     => array(
+                'style' => PHPExcel_Style_Border::BORDER_MEDIUM ,
+                'color' => array(
+                    'rgb' => '56a6f7'
+                )
+            ),
+            'bottom'     => array(
+                'style' => PHPExcel_Style_Border::BORDER_MEDIUM ,
+                'color' => array(
+                    'rgb' => '56a6f7'
+                )
+            )
+        ),
+        'alignment' =>  array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                'wrap'          => FALSE
+    ));
+    $estiloInformacion = new PHPExcel_Style();
+    $estiloInformacion->applyFromArray(
+        array(
+            'font' => array(
+            'name'      => 'Arial',
+            'color'     => array(
+                'rgb' => '000000'
+            )
+        ),
+        'fill'  => array(
+            'type'      => PHPExcel_Style_Fill::FILL_SOLID,
+            'color'     => array('argb' => 'FFd9b7f4')
+        ),
+        'borders' => array(
+            'left'     => array(
+                'style' => PHPExcel_Style_Border::BORDER_THIN ,
+                'color' => array(
+                    'rgb' => '3a2a47'
+                )
+            )
+        )
+    ));
+    for ($fila=0; $fila < $i; $fila++) { 
+        $objPHPExcel->getActiveSheet()->getStyle('A'.$fila.':'.'G'.$fila)->applyFromArray($estiloTituloColumnas);
+    }
+    $objPHPExcel->getActiveSheet()->getStyle('A1')->applyFromArray($estiloTitulo);
+    $objPHPExcel->getActiveSheet()->getStyle('A2:G2')->applyFromArray($estiloTituloReporte);
+    $objPHPExcel->getActiveSheet()->freezePane('G3');
+    $objPHPExcel->getActiveSheet()->freezePaneByColumnAndRow(0,2);
+    //$objPHPExcel->getActiveSheet()->setSharedStyle($estiloInformacion, "A2:D4");
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="rsanual.xls"');
+    header('Cache-Control: max-age=0');
+
+    $objWriter=PHPExcel_IOFactory::createWriter($objPHPExcel,'Excel2007');
+    $objWriter->save('php://output');
+    exit;
+    $conn = null;
+?>
